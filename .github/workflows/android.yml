@@ -25,15 +25,9 @@ jobs:
       run: chmod +x gradlew
 
     - name: Fix gradle wrapper
-      run: |
-        # Download full gradle distribution
-        rm -rf gradle/ gradlew
-        wget -q https://services.gradle.org/distributions/gradle-8.9-bin.zip
-        unzip -q gradle-8.9-bin.zip
-        cp -r gradle-8.9/wrapper/ gradle/
-        cp gradle-8.9/bin/gradle ./gradlew
-        chmod +x gradlew
-        rm -rf gradle-8.9 gradle-8.9-bin.zip
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: 8.9
 
     - name: Run unit tests
       run: ./gradlew testDebugUnitTest
