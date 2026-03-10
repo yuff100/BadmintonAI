@@ -1,0 +1,3 @@
+-keep class com.badmintonai.** { *; }
+-keep class com.google.mediapipe.** { *; }
+-keep class org.tensorflow.** { *; }

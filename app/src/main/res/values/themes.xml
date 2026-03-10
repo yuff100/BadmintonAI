@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.BadmintonAI" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

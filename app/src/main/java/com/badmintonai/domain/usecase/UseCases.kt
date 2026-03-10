@@ -1,0 +1,101 @@
+package com.badmintonai.domain.usecase
+
+import com.badmintonai.domain.model.AnalysisResult
+import com.badmintonai.domain.repository.AnalysisRepository
+import com.badmintonai.domain.repository.PoseEstimationRepository
+import com.badmintonai.domain.repository.ScoringRepository
+import com.badmintonai.domain.repository.StrokeClassificationRepository
+import javax.inject.Inject
+
+class AnalyzeVideoUseCase @Inject constructor(
+    private val poseEstimationRepo: PoseEstimationRepository,
+    private val classificationRepo: StrokeClassificationRepository,
+    private val scoringRepo: ScoringRepository,
+    private val analysisRepo: AnalysisRepository
+) {
+    suspend operator fun invoke(videoPath: String): AnalysisResult {
+        // 1. Extract pose frames from video
+        val poseFrames = poseEstimationRepo.processVideo(videoPath)
+        
+        // 2. Classify stroke type
+        val strokeType = classificationRepo.classifyStroke(poseFrames)
+        
+        // 3. Calculate dimension scores
+        val dimensionScores = scoringRepo.calculateScore(strokeType, poseFrames)
+        
+        // 4. Calculate overall score (weighted average)
+        val overallScore = dimensionScores.sumOf { 
+            (it.score * it.weight).toInt() 
+        }
+        
+        // 5. Generate summary feedback
+        val summaryFeedback = generateSummaryFeedback(dimensionScores, overallScore)
+        
+        // 6. Create and save result
+        val result = AnalysisResult(
+            timestamp = System.currentTimeMillis(),
+            strokeType = strokeType,
+            overallScore = overallScore,
+            dimensionScores = dimensionScores,
+            summaryFeedback = summaryFeedback,
+            videoPath = videoPath,
+            durationMs = poseFrames.lastOrNull()?.timestamp ?: 0
+        )
+        
+        analysisRepo.saveResult(result)
+        
+        return result
+    }
+    
+    private fun generateSummaryFeedback(
+        dimensionScores: List<com.badmintonai.domain.model.DimensionScore>,
+        overallScore: Int
+    ): String {
+        val lowestScore = dimensionScores.minByOrNull { it.score }
+        val highestScore = dimensionScores.maxByOrNull { it.score }
+        
+        return buildString {
+            append("Overall performance: ")
+            append(when {
+                overallScore >= 90 -> "Excellent!"
+                overallScore >= 80 -> "Very good!"
+                overallScore >= 70 -> "Good!"
+                overallScore >= 60 -> "Average."
+                else -> "Needs improvement."
+            })
+            append("\n\n")
+            
+            highestScore?.let {
+                append("Strength: ${it.dimension.name} - ${it.feedback}\n")
+            }
+            
+            lowestScore?.let {
+                append("Area to improve: ${it.dimension.name} - ${it.feedback}")
+            }
+        }
+    }
+}
+
+class GetAnalysisHistoryUseCase @Inject constructor(
+    private val analysisRepository: AnalysisRepository
+) {
+    suspend operator fun invoke(): List<AnalysisResult> {
+        return analysisRepository.getHistory()
+    }
+}
+
+class GetAnalysisResultUseCase @Inject constructor(
+    private val analysisRepository: AnalysisRepository
+) {
+    suspend operator fun invoke(id: Long): AnalysisResult? {
+        return analysisRepository.getResultById(id)
+    }
+}
+
+class DeleteAnalysisResultUseCase @Inject constructor(
+    private val analysisRepository: AnalysisRepository
+) {
+    suspend operator fun invoke(id: Long) {
+        return analysisRepository.deleteResult(id)
+    }
+}
