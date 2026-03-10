@@ -10,13 +10,13 @@ class ModelsTest {
     fun `StrokeType enum contains all required values`() {
         val expectedTypes = listOf(
             "FOREHAND_CLEAR",
-            "SMASH", 
+            "SMASH",
             "DROP_SHOT",
             "SERVE",
             "NET_SHOT",
             "UNKNOWN"
         )
-        
+
         val actualTypes = StrokeType.values().map { it.name }
         assertEquals(expectedTypes, actualTypes)
     }
@@ -25,7 +25,7 @@ class ModelsTest {
     fun `ScoringDimension enum has correct weights`() {
         val dimensions = ScoringDimension.values()
         assertEquals(6, dimensions.size)
-        
+
         val expectedWeights = mapOf(
             ScoringDimension.PREPARATION to 0.2f,
             ScoringDimension.BACKSWING to 0.15f,
@@ -34,8 +34,7 @@ class ModelsTest {
             ScoringDimension.TIMING to 0.15f,
             ScoringDimension.FOOTWORK to 0.1f
         )
-        
-        // Verify weights sum to 1.0
+
         val totalWeight = expectedWeights.values.sum()
         assertEquals(1.0f, totalWeight, 0.001f)
     }
@@ -43,7 +42,7 @@ class ModelsTest {
     @Test
     fun `PoseLandmark correctly stores coordinates`() {
         val landmark = PoseLandmark(0.5f, 0.3f, -0.2f, 0.9f)
-        
+
         assertEquals(0.5f, landmark.x)
         assertEquals(0.3f, landmark.y)
         assertEquals(-0.2f, landmark.z)
@@ -58,7 +57,7 @@ class ModelsTest {
             weight = 0.25f,
             feedback = "Good contact point"
         )
-        
+
         val weighted = score.score * score.weight
         assertEquals(20f, weighted)
     }
@@ -73,10 +72,11 @@ class ModelsTest {
             DimensionScore(ScoringDimension.TIMING, 95, 0.15f, ""),
             DimensionScore(ScoringDimension.FOOTWORK, 70, 0.1f, "")
         )
-        
-        val overall = dimensionScores.sumOf { (it.score * it.weight).toInt() }
-        
-        // Calculate expected: 90*0.2 + 80*0.15 + 85*0.25 + 75*0.15 + 95*0.15 +70*0.1 = 83.75 → 83
+
+        val overall = dimensionScores.sumOf {
+            (it.score * it.weight).toInt()
+        }
+
         assertEquals(83, overall)
         assertTrue(overall in 0..100)
     }

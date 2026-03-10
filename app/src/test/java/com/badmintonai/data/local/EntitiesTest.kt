@@ -11,7 +11,6 @@ class EntitiesTest {
 
     @Test
     fun `Entity to domain mapping works correctly`() {
-        // Given
         val entity = AnalysisResultEntity(
             id = 123,
             timestamp = 123456789L,
@@ -26,10 +25,8 @@ class EntitiesTest {
             durationMs = 1500
         )
 
-        // When
         val domain = entity.toDomain()
 
-        // Then
         assertEquals(entity.id, domain.id)
         assertEquals(entity.timestamp, domain.timestamp)
         assertEquals(entity.strokeType, domain.strokeType)
@@ -42,7 +39,6 @@ class EntitiesTest {
 
     @Test
     fun `Domain to entity mapping works correctly`() {
-        // Given
         val domain = AnalysisResult(
             id = 456,
             timestamp = 987654321L,
@@ -57,10 +53,8 @@ class EntitiesTest {
             durationMs = 1200
         )
 
-        // When
         val entity = domain.toEntity()
 
-        // Then
         assertEquals(domain.id, entity.id)
         assertEquals(domain.timestamp, entity.timestamp)
         assertEquals(domain.strokeType, entity.strokeType)
@@ -73,7 +67,6 @@ class EntitiesTest {
 
     @Test
     fun `Mapping is bidirectionally consistent`() {
-        // Given
         val original = AnalysisResult(
             id = 789,
             timestamp = System.currentTimeMillis(),
@@ -89,10 +82,8 @@ class EntitiesTest {
             durationMs = 1300
         )
 
-        // When
         val mapped = original.toEntity().toDomain()
 
-        // Then
         assertEquals(original, mapped)
     }
 }

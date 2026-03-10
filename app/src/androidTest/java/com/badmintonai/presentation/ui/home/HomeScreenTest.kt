@@ -44,7 +44,7 @@ class HomeScreenTest {
     @Test
     fun startAnalysisButton_click_navigatesToRecording() {
         val navController = mock<androidx.navigation.NavController>()
-        
+
         composeTestRule.setContent {
             BadmintonAITheme {
                 HomeScreen(navController = navController)
@@ -58,7 +58,7 @@ class HomeScreenTest {
     @Test
     fun viewHistoryButton_click_navigatesToHistory() {
         val navController = mock<androidx.navigation.NavController>()
-        
+
         composeTestRule.setContent {
             BadmintonAITheme {
                 HomeScreen(navController = navController)

@@ -31,7 +31,7 @@ class UseCasesTest {
         classificationRepo = mockk()
         scoringRepo = mockk()
         analysisRepo = mockk(relaxUnitFun = true)
-        
+
         analyzeVideoUseCase = AnalyzeVideoUseCase(
             poseEstimationRepo,
             classificationRepo,
@@ -42,7 +42,6 @@ class UseCasesTest {
 
     @Test
     fun `AnalyzeVideoUseCase correctly processes video and returns result`() = runTest {
-        // Given
         val testVideoPath = "/test/video.mp4"
         val testPoseFrames = listOf(
             PoseFrame(0, emptyList()),
@@ -63,30 +62,25 @@ class UseCasesTest {
         coEvery { classificationRepo.classifyStroke(testPoseFrames) } returns testStrokeType
         coEvery { scoringRepo.calculateScore(testStrokeType, testPoseFrames) } returns testDimensionScores
 
-        // When
         val result = analyzeVideoUseCase(testVideoPath)
 
-        // Then
         assertEquals(testStrokeType, result.strokeType)
-        assertEquals(83, result.overallScore) // Weighted sum: 90*0.2 + 80*0.15 + 85*0.25 +75*0.15 +95*0.15 +70*0.1 = 83.75 → 83
+        assertEquals(83, result.overallScore)
         assertEquals(testDimensionScores, result.dimensionScores)
         assertEquals(testVideoPath, result.videoPath)
-        
+
         coVerify(exactly = 1) { analysisRepo.saveResult(any<AnalysisResult>()) }
     }
 
     @Test
     fun `AnalyzeVideoUseCase handles empty pose frames gracefully`() = runTest {
-        // Given
         val testVideoPath = "/test/empty.mp4"
         coEvery { poseEstimationRepo.processVideo(testVideoPath) } returns emptyList()
         coEvery { classificationRepo.classifyStroke(emptyList()) } returns StrokeType.UNKNOWN
         coEvery { scoringRepo.calculateScore(StrokeType.UNKNOWN, emptyList()) } returns emptyList()
 
-        // When
         val result = analyzeVideoUseCase(testVideoPath)
 
-        // Then
         assertEquals(StrokeType.UNKNOWN, result.strokeType)
         assertEquals(0, result.overallScore)
         assertEquals(emptyList(), result.dimensionScores)
@@ -94,7 +88,6 @@ class UseCasesTest {
 
     @Test
     fun `GetAnalysisHistoryUseCase correctly fetches history`() = runTest {
-        // Given
         val expectedHistory = listOf(
             AnalysisResult(1, System.currentTimeMillis(), StrokeType.SMASH, 85, emptyList(), "", "/test/1.mp4", 1000),
             AnalysisResult(2, System.currentTimeMillis() - 3600000, StrokeType.DROP_SHOT, 72, emptyList(), "", "/test/2.mp4", 1200)
@@ -102,10 +95,8 @@ class UseCasesTest {
         val useCase = GetAnalysisHistoryUseCase(analysisRepo)
         coEvery { analysisRepo.getHistory() } returns expectedHistory
 
-        // When
         val result = useCase()
 
-        // Then
         assertEquals(expectedHistory, result)
         assertEquals(2, result.size)
         assertEquals(StrokeType.SMASH, result[0].strokeType)
@@ -113,16 +104,13 @@ class UseCasesTest {
 
     @Test
     fun `GetAnalysisResultUseCase returns correct result by id`() = runTest {
-        // Given
         val testId = 123L
         val expectedResult = AnalysisResult(testId, System.currentTimeMillis(), StrokeType.SERVE, 78, emptyList(), "", "/test/serve.mp4", 800)
         val useCase = GetAnalysisResultUseCase(analysisRepo)
         coEvery { analysisRepo.getResultById(testId) } returns expectedResult
 
-        // When
         val result = useCase(testId)
 
-        // Then
         assertEquals(expectedResult, result)
         assertEquals(testId, result?.id)
         assertEquals(StrokeType.SERVE, result?.strokeType)
@@ -130,15 +118,12 @@ class UseCasesTest {
 
     @Test
     fun `DeleteAnalysisResultUseCase calls repository correctly`() = runTest {
-        // Given
         val testId = 456L
         val useCase = DeleteAnalysisResultUseCase(analysisRepo)
         coEvery { analysisRepo.deleteResult(testId) } returns Unit
 
-        // When
         useCase(testId)
 
-        // Then
         coVerify(exactly = 1) { analysisRepo.deleteResult(testId) }
     }
 }
