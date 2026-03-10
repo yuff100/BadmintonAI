@@ -24,10 +24,16 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Download gradle wrapper
+    - name: Fix gradle wrapper
       run: |
-        curl -L https://github.com/gradle/gradle/raw/v8.9.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+        # Download full gradle distribution
+        rm -rf gradle/ gradlew
+        wget -q https://services.gradle.org/distributions/gradle-8.9-bin.zip
+        unzip -q gradle-8.9-bin.zip
+        cp -r gradle-8.9/wrapper/ gradle/
+        cp gradle-8.9/bin/gradle ./gradlew
         chmod +x gradlew
+        rm -rf gradle-8.9 gradle-8.9-bin.zip
 
     - name: Run unit tests
       run: ./gradlew testDebugUnitTest
