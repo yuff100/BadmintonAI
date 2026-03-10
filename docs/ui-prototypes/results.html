@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=375, height=812, initial-scale=1.0">
+    <title>BadmintonAI - 分析结果</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            width: 375px;
+            height: 812px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            padding: 50px 20px 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .back-btn {
+            font-size: 24px;
+        }
+        .header-text h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .header-text p {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        .video-section {
+            background: #1a1a2e;
+            height: 220px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .skeleton-overlay {
+            position: relative;
+        }
+        .skeleton-overlay svg {
+            width: 150px;
+            height: 200px;
+        }
+        .joint { fill: #4fc3f7; }
+        .bone { stroke: #4fc3f7; stroke-width: 2.5; stroke-linecap: round; }
+        .bone-good { stroke: #43a047; }
+        .bone-warning { stroke: #fb8c00; }
+        .video-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .play-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .timeline {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        .timeline-progress {
+            width: 45%;
+            height: 100%;
+            background: #4fc3f7;
+            border-radius: 2px;
+        }
+        .time-label {
+            color: white;
+            font-size: 12px;
+        }
+        .score-card {
+            background: white;
+            margin: -20px 20px 20px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+        .score-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .score-circle .number {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .score-circle .label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        .score-info h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .score-info p {
+            font-size: 13px;
+            color: #43a047;
+        }
+        .dimension-scores {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .dimension {
+            text-align: center;
+        }
+        .dimension-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+        .dimension-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .dimension-fill.excellent { background: #43a047; }
+        .dimension-fill.good { background: #1a73e8; }
+        .dimension-fill.fair { background: #fb8c00; }
+        .dimension-name {
+            font-size: 11px;
+            color: #666;
+        }
+        .dimension-score {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+        .section {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .feedback-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .feedback-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .feedback-item:last-child {
+            margin-bottom: 0;
+        }
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .feedback-icon.good {
+            background: #e8f5e9;
+            color: #43a047;
+        }
+        .feedback-icon.warning {
+            background: #fff3e0;
+            color: #fb8c00;
+        }
+        .feedback-icon.error {
+            background: #ffebee;
+            color: #e53935;
+        }
+        .feedback-text {
+            flex: 1;
+        }
+        .feedback-text strong {
+            font-size: 14px;
+            color: #333;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .feedback-text p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        .drill-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .drill-icon {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .drill-text h4 {
+            font-size: 14px;
+            color: #1a73e8;
+            margin-bottom: 2px;
+        }
+        .drill-text p {
+            font-size: 12px;
+            color: #666;
+        }
+        .action-buttons {
+            padding: 20px;
+            display: flex;
+            gap: 12px;
+            padding-bottom: 40px;
+        }
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: white;
+            color: #1a73e8;
+            border: 1px solid #1a73e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="back-btn">‹</span>
+        <div class="header-text">
+            <h1>分析结果</h1>
+            <p>正手高远球 · 2024年3月9日</p>
+        </div>
+    </div>
+    
+    <div class="video-section">
+        <div class="skeleton-overlay">
+            <svg viewBox="0 0 150 200">
+                <!-- Head -->
+                <circle class="joint" cx="75" cy="20" r="6"/>
+                <!-- Spine -->
+                <line class="bone bone-good" x1="75" y1="26" x2="75" y2="45"/>
+                <line class="bone bone-good" x1="75" y1="45" x2="75" y2="100"/>
+                <!-- Shoulders -->
+                <circle class="joint" cx="45" cy="50" r="4"/>
+                <circle class="joint" cx="105" cy="50" r="4"/>
+                <line class="bone bone-good" x1="45" y1="50" x2="105" y2="50"/>
+                <!-- Left arm -->
+                <line class="bone bone-good" x1="45" y1="50" x2="25" y2="85"/>
+                <circle class="joint" cx="25" cy="85" r="3"/>
+                <line class="bone" x1="25" y1="85" x2="15" y2="120"/>
+                <circle class="joint" cx="15" cy="120" r="3"/>
+                <!-- Right arm (raised) - warning color for elbow -->
+                <line class="bone bone-warning" x1="105" y1="50" x2="125" y2="30"/>
+                <circle class="joint" cx="125" cy="30" r="3" style="fill:#fb8c00"/>
+                <line class="bone bone-good" x1="125" y1="30" x2="138" y2="12"/>
+                <circle class="joint" cx="138" cy="12" r="3"/>
+                <!-- Racket -->
+                <ellipse cx="142" cy="5" rx="8" ry="12" fill="none" stroke="#4fc3f7" stroke-width="1.5"/>
+                <!-- Hips -->
+                <circle class="joint" cx="60" cy="105" r="4"/>
+                <circle class="joint" cx="90" cy="105" r="4"/>
+                <line class="bone bone-good" x1="60" y1="105" x2="90" y2="105"/>
+                <!-- Left leg -->
+                <line class="bone bone-good" x1="60" y1="105" x2="50" y2="145"/>
+                <circle class="joint" cx="50" cy="145" r="3"/>
+                <line class="bone bone-good" x1="50" y1="145" x2="45" y2="185"/>
+                <circle class="joint" cx="45" cy="185" r="3"/>
+                <!-- Right leg -->
+                <line class="bone bone-good" x1="90" y1="105" x2="100" y2="145"/>
+                <circle class="joint" cx="100" cy="145" r="3"/>
+                <line class="bone bone-good" x1="100" y1="145" x2="105" y2="185"/>
+                <circle class="joint" cx="105" cy="185" r="3"/>
+            </svg>
+        </div>
+        <div class="video-controls">
+            <div class="play-btn">▶</div>
+            <div class="timeline">
+                <div class="timeline-progress"></div>
+            </div>
+            <span class="time-label">0:03 / 0:08</span>
+        </div>
+    </div>
+    
+    <div class="score-card">
+        <div class="score-header">
+            <div class="score-circle">
+                <span class="number">78</span>
+                <span class="label">综合评分</span>
+            </div>
+            <div class="score-info">
+                <h2>良好水平</h2>
+                <p>✓ 超过 65% 的用户</p>
+            </div>
+        </div>
+        
+        <div class="dimension-scores">
+            <div class="dimension">
+                <div class="dimension-bar">
+                    <div class="dimension-fill excellent" style="width:88%"></div>
+                </div>
+                <div class="dimension-score">88</div>
+                <div class="dimension-name">准备动作</div>
+            </div>
+            <div class="dimension">
+                <div class="dimension-bar">
+                    <div class="dimension-fill good" style="width:75%"></div>
+                </div>
+                <div class="dimension-score">75</div>
+                <div class="dimension-name">引拍</div>
+            </div>
+            <div class="dimension">
+                <div class="dimension-bar">
+                    <div class="dimension-fill fair" style="width:62%"></div>
+                </div>
+                <div class="dimension-score">62</div>
+                <div class="dimension-name">击球点</div>
+            </div>
+            <div class="dimension">
+                <div class="dimension-bar">
+                    <div class="dimension-fill good" style="width:80%"></div>
+                </div>
+                <div class="dimension-score">80</div>
+                <div class="dimension-name">随挥</div>
+            </div>
+            <div class="dimension">
+                <div class="dimension-bar">
+                    <div class="dimension-fill good" style="width:82%"></div>
+                </div>
+                <div class="dimension-score">82</div>
+                <div class="dimension-name">节奏</div>
+            </div>
+            <div class="dimension">
+                <div class="dimension-bar">
+                    <div class="dimension-fill good" style="width:78%"></div>
+                </div>
+                <div class="dimension-score">78</div>
+                <div class="dimension-name">步法</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>详细反馈</h3>
+        <div class="feedback-card">
+            <div class="feedback-item">
+                <div class="feedback-icon good">✓</div>
+                <div class="feedback-text">
+                    <strong>准备姿势标准</strong>
+                    <p>重心稳定，双脚站位合理，随时准备移动</p>
+                </div>
+            </div>
+            <div class="feedback-item">
+                <div class="feedback-icon warning">!</div>
+                <div class="feedback-text">
+                    <strong>击球点偏低</strong>
+                    <p>击球时手臂未完全伸展，击球点在肩部高度。建议在头顶上方击球，可获得更大力量</p>
+                </div>
+            </div>
+            <div class="feedback-item">
+                <div class="feedback-icon warning">!</div>
+                <div class="feedback-text">
+                    <strong>引拍时肘部下沉</strong>
+                    <p>引拍阶段肘部角度约85°，理想角度应为100-120°。保持高肘位可增加挥拍行程</p>
+                </div>
+            </div>
+            <div class="feedback-item">
+                <div class="feedback-icon good">✓</div>
+                <div class="feedback-text">
+                    <strong>随挥完整</strong>
+                    <p>击球后手臂顺势下摆，动作流畅自然</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>推荐练习</h3>
+        <div class="drill-card">
+            <div class="drill-icon">🎯</div>
+            <div class="drill-text">
+                <h4>高点击球专项练习</h4>
+                <p>对墙挥拍练习，专注于在最高点触球</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <div class="btn btn-secondary">保存结果</div>
+        <div class="btn btn-primary">再来一次</div>
+    </div>
+</body>
+</html>

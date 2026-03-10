@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=375, height=812, initial-scale=1.0">
+    <title>BadmintonAI - 分析中</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(180deg, #1a73e8 0%, #0d47a1 100%);
+            width: 375px;
+            height: 812px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .analysis-container {
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+        .skeleton-animation {
+            width: 200px;
+            height: 280px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+        .skeleton-animation svg {
+            width: 100%;
+            height: 100%;
+        }
+        .joint {
+            fill: #4fc3f7;
+        }
+        .bone {
+            stroke: white;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #4fc3f7, transparent);
+            animation: scan 2s ease-in-out infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        .progress-bar {
+            width: 240px;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .progress-fill {
+            width: 65%;
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #81d4fa);
+            border-radius: 3px;
+        }
+        .progress-text {
+            margin-top: 12px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .status-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .status-detail {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .steps {
+            margin-top: 50px;
+            text-align: left;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .step.done .step-icon {
+            background: #43a047;
+        }
+        .step.active .step-icon {
+            background: white;
+            color: #1a73e8;
+        }
+        .step.pending .step-icon {
+            background: rgba(255,255,255,0.3);
+        }
+        .step.done, .step.active {
+            opacity: 1;
+        }
+        .step.pending {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="analysis-container">
+        <div class="skeleton-animation">
+            <div class="scan-line"></div>
+            <svg viewBox="0 0 200 280">
+                <!-- Head -->
+                <circle class="joint" cx="100" cy="30" r="8"/>
+                <!-- Neck to spine -->
+                <line class="bone" x1="100" y1="38" x2="100" y2="60"/>
+                <!-- Shoulders -->
+                <circle class="joint" cx="60" cy="70" r="6"/>
+                <circle class="joint" cx="140" cy="70" r="6"/>
+                <line class="bone" x1="60" y1="70" x2="140" y2="70"/>
+                <!-- Spine -->
+                <line class="bone" x1="100" y1="60" x2="100" y2="150"/>
+                <circle class="joint" cx="100" cy="150" r="6"/>
+                <!-- Left arm -->
+                <line class="bone" x1="60" y1="70" x2="35" y2="120"/>
+                <circle class="joint" cx="35" cy="120" r="5"/>
+                <line class="bone" x1="35" y1="120" x2="25" y2="170"/>
+                <circle class="joint" cx="25" cy="170" r="4"/>
+                <!-- Right arm (raised with racket) -->
+                <line class="bone" x1="140" y1="70" x2="165" y2="45"/>
+                <circle class="joint" cx="165" cy="45" r="5"/>
+                <line class="bone" x1="165" y1="45" x2="180" y2="20"/>
+                <circle class="joint" cx="180" cy="20" r="4"/>
+                <!-- Racket -->
+                <ellipse cx="185" cy="10" rx="12" ry="18" fill="none" stroke="white" stroke-width="2"/>
+                <!-- Hips -->
+                <circle class="joint" cx="75" cy="155" r="5"/>
+                <circle class="joint" cx="125" cy="155" r="5"/>
+                <line class="bone" x1="75" y1="155" x2="125" y2="155"/>
+                <!-- Left leg -->
+                <line class="bone" x1="75" y1="155" x2="65" y2="210"/>
+                <circle class="joint" cx="65" cy="210" r="5"/>
+                <line class="bone" x1="65" y1="210" x2="60" y2="265"/>
+                <circle class="joint" cx="60" cy="265" r="4"/>
+                <!-- Right leg -->
+                <line class="bone" x1="125" y1="155" x2="135" y2="210"/>
+                <circle class="joint" cx="135" cy="210" r="5"/>
+                <line class="bone" x1="135" y1="210" x2="140" y2="265"/>
+                <circle class="joint" cx="140" cy="265" r="4"/>
+            </svg>
+        </div>
+        
+        <div class="status-text">正在分析动作...</div>
+        <div class="status-detail">正手高远球 · 识别关键帧</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="progress-text">65% · 预计还需 3 秒</div>
+        </div>
+        
+        <div class="steps">
+            <div class="step done">
+                <div class="step-icon">✓</div>
+                <span>视频解码完成</span>
+            </div>
+            <div class="step done">
+                <div class="step-icon">✓</div>
+                <span>姿态检测完成</span>
+            </div>
+            <div class="step active">
+                <div class="step-icon">◉</div>
+                <span>动作分析中...</span>
+            </div>
+            <div class="step pending">
+                <div class="step-icon">○</div>
+                <span>生成评分报告</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

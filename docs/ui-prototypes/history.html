@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=375, height=812, initial-scale=1.0">
+    <title>BadmintonAI - 历史记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            width: 375px;
+            height: 812px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            padding: 50px 20px 20px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            padding: 20px;
+            margin-top: -10px;
+        }
+        .stat-card {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .chart-section {
+            background: white;
+            margin: 0 20px 20px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .chart-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+        .chart-header select {
+            background: #f5f7fa;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+        }
+        .chart {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding-top: 20px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #1a73e8 0%, #42a5f5 100%);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #666;
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+        .chart-labels span {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+        }
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .trend-indicator.up {
+            color: #43a047;
+        }
+        .trend-indicator.up::before {
+            content: '↑';
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 0 20px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+        .filter-tab {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+            white-space: nowrap;
+        }
+        .filter-tab.active {
+            background: #1a73e8;
+            color: white;
+        }
+        .section-header {
+            padding: 0 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+        .history-list {
+            padding: 0 20px;
+            padding-bottom: 100px;
+        }
+        .date-group {
+            margin-bottom: 20px;
+        }
+        .date-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .history-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .history-card .thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .history-card .info {
+            flex: 1;
+        }
+        .history-card .info h4 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .history-card .info .meta {
+            font-size: 12px;
+            color: #888;
+        }
+        .history-card .score-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+        }
+        .score-badge.excellent { background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); }
+        .score-badge.good { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); }
+        .score-badge.fair { background: linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%); }
+        .history-card .trend {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        .trend.up {
+            background: #e8f5e9;
+            color: #43a047;
+        }
+        .trend.down {
+            background: #ffebee;
+            color: #e53935;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 375px;
+            height: 83px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding-bottom: 20px;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #999;
+            font-size: 11px;
+        }
+        .nav-item.active {
+            color: #1a73e8;
+        }
+        .nav-item .nav-icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>训练记录</h1>
+        <p>追踪你的进步轨迹</p>
+    </div>
+    
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number">27</div>
+            <div class="label">本月练习</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">76</div>
+            <div class="label">平均得分</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">+12</div>
+            <div class="label">月进步</div>
+        </div>
+    </div>
+    
+    <div class="chart-section">
+        <div class="chart-header">
+            <h3>得分趋势</h3>
+            <select>
+                <option>正手高远球</option>
+                <option>杀球</option>
+                <option>全部</option>
+            </select>
+        </div>
+        <div class="chart">
+            <div class="chart-bar" style="height:55%" data-value="62"></div>
+            <div class="chart-bar" style="height:60%" data-value="68"></div>
+            <div class="chart-bar" style="height:58%" data-value="65"></div>
+            <div class="chart-bar" style="height:70%" data-value="75"></div>
+            <div class="chart-bar" style="height:68%" data-value="72"></div>
+            <div class="chart-bar" style="height:78%" data-value="78"></div>
+            <div class="chart-bar" style="height:85%" data-value="85"></div>
+        </div>
+        <div class="chart-labels">
+            <span>3/3</span>
+            <span>3/4</span>
+            <span>3/5</span>
+            <span>3/6</span>
+            <span>3/7</span>
+            <span>3/8</span>
+            <span>3/9</span>
+        </div>
+        <div class="trend-indicator up">
+            较上周提升 15%，击球点维度进步最大
+        </div>
+    </div>
+    
+    <div class="filter-tabs">
+        <div class="filter-tab active">全部</div>
+        <div class="filter-tab">正手高远球</div>
+        <div class="filter-tab">杀球</div>
+        <div class="filter-tab">吊球</div>
+        <div class="filter-tab">发球</div>
+    </div>
+    
+    <div class="section-header">
+        <h3>历史记录</h3>
+    </div>
+    
+    <div class="history-list">
+        <div class="date-group">
+            <div class="date-label">今天</div>
+            <div class="history-card">
+                <div class="thumbnail">🏸</div>
+                <div class="info">
+                    <h4>正手高远球 <span class="trend up">+7</span></h4>
+                    <div class="meta">14:32 · 时长 8秒</div>
+                </div>
+                <div class="score-badge excellent">85</div>
+            </div>
+            <div class="history-card">
+                <div class="thumbnail">🏸</div>
+                <div class="info">
+                    <h4>杀球</h4>
+                    <div class="meta">10:15 · 时长 6秒</div>
+                </div>
+                <div class="score-badge good">78</div>
+            </div>
+        </div>
+        
+        <div class="date-group">
+            <div class="date-label">昨天</div>
+            <div class="history-card">
+                <div class="thumbnail">🏸</div>
+                <div class="info">
+                    <h4>正手高远球</h4>
+                    <div class="meta">16:45 · 时长 7秒</div>
+                </div>
+                <div class="score-badge good">78</div>
+            </div>
+            <div class="history-card">
+                <div class="thumbnail">🏸</div>
+                <div class="info">
+                    <h4>吊球 <span class="trend down">-3</span></h4>
+                    <div class="meta">16:20 · 时长 5秒</div>
+                </div>
+                <div class="score-badge fair">62</div>
+            </div>
+        </div>
+        
+        <div class="date-group">
+            <div class="date-label">3月7日</div>
+            <div class="history-card">
+                <div class="thumbnail">🏸</div>
+                <div class="info">
+                    <h4>正手高远球 <span class="trend up">+4</span></h4>
+                    <div class="meta">19:30 · 时长 9秒</div>
+                </div>
+                <div class="score-badge good">72</div>
+            </div>
+            <div class="history-card">
+                <div class="thumbnail">🏸</div>
+                <div class="info">
+                    <h4>发球</h4>
+                    <div class="meta">19:15 · 时长 4秒</div>
+                </div>
+                <div class="score-badge excellent">88</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom-nav">
+        <div class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span>首页</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span>进步</span>
+        </div>
+        <div class="nav-item active">
+            <span class="nav-icon">📋</span>
+            <span>历史</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span>设置</span>
+        </div>
+    </div>
+</body>
+</html>

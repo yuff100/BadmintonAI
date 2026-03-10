@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=375, height=812, initial-scale=1.0">
+    <title>BadmintonAI - 首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            width: 375px;
+            height: 812px;
+            overflow: hidden;
+            position: relative;
+        }
+        .status-bar {
+            height: 44px;
+            background: #1a73e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            padding: 20px;
+            padding-top: 10px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            padding: 20px;
+            margin-top: -30px;
+        }
+        .action-btn {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .action-btn .icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 28px;
+        }
+        .action-btn.record .icon {
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+        }
+        .action-btn.import .icon {
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+        }
+        .action-btn h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .action-btn p {
+            font-size: 12px;
+            color: #666;
+        }
+        .section {
+            padding: 0 20px;
+            margin-top: 20px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .section-header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+        .section-header a {
+            font-size: 14px;
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        .analysis-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .analysis-card .thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .analysis-card .info {
+            flex: 1;
+        }
+        .analysis-card .info h4 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .analysis-card .info p {
+            font-size: 12px;
+            color: #888;
+        }
+        .analysis-card .score {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+        .score.excellent { background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); }
+        .score.good { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); }
+        .score.fair { background: linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%); }
+        
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding-bottom: 20px;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #999;
+            font-size: 11px;
+        }
+        .nav-item.active {
+            color: #1a73e8;
+        }
+        .nav-item .nav-icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">9:41</div>
+    
+    <div class="header">
+        <h1>BadmintonAI</h1>
+        <p>AI驱动的羽毛球技术分析</p>
+    </div>
+    
+    <div class="action-buttons">
+        <div class="action-btn record">
+            <div class="icon">🎬</div>
+            <h3>录制视频</h3>
+            <p>实时拍摄动作</p>
+        </div>
+        <div class="action-btn import">
+            <div class="icon">📁</div>
+            <h3>导入视频</h3>
+            <p>从相册选择</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-header">
+            <h2>最近分析</h2>
+            <a href="#">查看全部 ›</a>
+        </div>
+        
+        <div class="analysis-card">
+            <div class="thumbnail">🏸</div>
+            <div class="info">
+                <h4>正手高远球</h4>
+                <p>今天 14:32</p>
+            </div>
+            <div class="score excellent">92</div>
+        </div>
+        
+        <div class="analysis-card">
+            <div class="thumbnail">🏸</div>
+            <div class="info">
+                <h4>杀球</h4>
+                <p>今天 10:15</p>
+            </div>
+            <div class="score good">78</div>
+        </div>
+        
+        <div class="analysis-card">
+            <div class="thumbnail">🏸</div>
+            <div class="info">
+                <h4>正手高远球</h4>
+                <p>昨天 16:45</p>
+            </div>
+            <div class="score fair">65</div>
+        </div>
+    </div>
+    
+    <div class="bottom-nav">
+        <div class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span>首页</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span>进步</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span>历史</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span>设置</span>
+        </div>
+    </div>
+</body>
+</html>
