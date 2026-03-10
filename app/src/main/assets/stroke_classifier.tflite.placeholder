@@ -1,0 +1,4 @@
+# This is a placeholder for stroke_classifier.tflite model
+# You need to train or download a custom TFLite model for badminton stroke classification
+# Model input: [1, 33 * 3 * 30] float32 (33 landmarks, 3 coordinates, 30 frames)
+# Model output: [1, 6] float32 (confidence for 5 stroke types + unknown)
