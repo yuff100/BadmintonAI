@@ -2299,7 +2299,204 @@ fun ErrorHandler(
 
 ---
 
-## 12. Build & Deployment
+## 12. Testing Strategy
+
+### 12.1 Test Architecture
+采用分层测试策略，覆盖从单元测试到端到端测试的全流程：
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  End-to-End Tests                    │
+│  (UI flow testing on real devices/emulators)        │
+├─────────────────────────────────────────────────────┤
+│              Integration Tests                       │
+│  (Component integration, database, API tests)       │
+├─────────────────────────────────────────────────────┤
+│                Unit Tests                           │
+│  (Business logic, models, use cases, utilities)     │
+└─────────────────────────────────────────────────────┘
+```
+
+### 12.2 Test Coverage Goals
+| Test Type | Coverage Target | Priority |
+|-----------|-----------------|----------|
+| Unit Tests | ≥90% | P0 |
+| Integration Tests | ≥70% | P1 |
+| UI Tests | ≥50% | P1 |
+| E2E Tests | ≥30% | P2 |
+
+### 12.3 Unit Test Structure
+#### 12.3.1 Domain Layer Tests
+```kotlin
+// Test location: app/src/test/java/com/badmintonai/domain/
+├── model/
+│   ├── ModelsTest.kt          // Data model validation
+│   └── ScoreCalculationTest.kt // Scoring logic tests
+└── usecase/
+    ├── AnalyzeVideoUseCaseTest.kt
+    ├── GetHistoryUseCaseTest.kt
+    └── DeleteResultUseCaseTest.kt
+```
+
+**Test Framework**:
+- JUnit 4 for test runner
+- MockK for dependency mocking
+- kotlinx-coroutines-test for coroutine testing
+
+#### 12.3.2 Data Layer Tests
+```kotlin
+// Test location: app/src/test/java/com/badmintonai/data/
+├── local/
+│   ├── EntitiesTest.kt       // Entity mapping tests
+│   ├── ConvertersTest.kt     // Room type converter tests
+│   └── DaoTest.kt            // Database operation tests
+├── repository/
+│   ├── AnalysisRepositoryTest.kt
+│   └── PoseEstimationRepositoryTest.kt
+└── ml/
+    ├── ScoringEngineTest.kt
+    └── StrokeClassifierTest.kt
+```
+
+### 12.4 Instrumented Tests
+#### 12.4.1 UI Tests
+```kotlin
+// Test location: app/src/androidTest/java/com/badmintonai/presentation/ui/
+├── home/
+│   └── HomeScreenTest.kt
+├── recording/
+│   └── RecordingScreenTest.kt
+├── analysis/
+│   └── AnalysisScreenTest.kt
+├── results/
+│   └── ResultsScreenTest.kt
+└── history/
+    └── HistoryScreenTest.kt
+```
+
+**UI Test Framework**:
+- Jetpack Compose Testing
+- Espresso for view interactions
+- Mockito for navigation mocking
+
+#### 12.4.2 ML Component Tests
+```kotlin
+// Test location: app/src/androidTest/java/com/badmintonai/ml/
+├── MediaPipePoseEstimatorTest.kt
+├── TFLiteStrokeClassifierTest.kt
+└── ScoringEngineIntegrationTest.kt
+```
+
+### 12.5 Test Dependencies
+```kotlin
+// build.gradle.kts (app module)
+dependencies {
+    // Unit testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Instrumented testing
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
+    androidTestImplementation("io.mockk:mockk-android:1.13.8")
+}
+```
+
+### 12.6 Test Execution
+#### 12.6.1 Local Execution
+```bash
+# Run all unit tests
+./gradlew testDebugUnitTest
+
+# Run unit tests for specific module
+./gradlew domain:testDebugUnitTest
+
+# Run instrumented tests (requires connected device/emulator)
+./gradlew connectedDebugAndroidTest
+
+# Run UI tests for specific screen
+./gradlew connectedDebugAndroidTest -P android.testInstrumentationRunnerArguments.class=com.badmintonai.presentation.ui.home.HomeScreenTest
+```
+
+#### 12.6.2 CI Pipeline Integration
+```yaml
+# .github/workflows/android.yml (partial)
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
+      - name: Generate test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: app/build/reports/tests/testDebugUnitTest/
+```
+
+### 12.7 Test Case Examples
+#### 12.7.1 Unit Test Example
+```kotlin
+@Test
+fun `AnalyzeVideoUseCase correctly calculates overall score`() = runTest {
+    // Given
+    val testFrames = generateTestPoseFrames()
+    val dimensionScores = listOf(
+        DimensionScore(PREPARATION, 90, 0.2f, ""),
+        DimensionScore(BACKSWING, 80, 0.15f, ""),
+        DimensionScore(CONTACT_POINT, 85, 0.25f, ""),
+        DimensionScore(FOLLOW_THROUGH, 75, 0.15f, ""),
+        DimensionScore(TIMING, 95, 0.15f, ""),
+        DimensionScore(FOOTWORK, 70, 0.1f, "")
+    )
+    
+    coEvery { poseRepo.processVideo(any()) } returns testFrames
+    coEvery { classificationRepo.classifyStroke(any()) } returns FOREHAND_CLEAR
+    coEvery { scoringRepo.calculateScore(any(), any()) } returns dimensionScores
+
+    // When
+    val result = useCase("/test/video.mp4")
+
+    // Then
+    assertEquals(83, result.overallScore) // Weighted sum calculation
+    assertEquals(FOREHAND_CLEAR, result.strokeType)
+    coVerify { analysisRepo.saveResult(result) }
+}
+```
+
+#### 12.7.2 UI Test Example
+```kotlin
+@Test
+fun homeScreen_startAnalysisButton_click_navigatesToRecording() {
+    val navController = mock<NavController>()
+    
+    composeTestRule.setContent {
+        BadmintonAITheme {
+            HomeScreen(navController = navController)
+        }
+    }
+
+    composeTestRule.onNodeWithText("Start Analysis").performClick()
+    verify(navController).navigate("recording")
+}
+```
+
+### 12.8 Test Best Practices
+1. **Isolation**: Each test should be independent, no shared state between tests
+2. **Readability**: Use descriptive test names following `should_xxx_when_xxx` pattern
+3. **Speed**: Unit tests should run in <10ms each, avoid heavy operations in unit tests
+4. **Flakiness**: Avoid time-dependent tests, use TestDispatcher for coroutines
+5. **Maintainability**: Keep tests simple, avoid complex logic in test code
+6. **Coverage**: Focus on critical paths first, then expand to edge cases
+
+---
+
+## 13. Build & Deployment
 
 ### 12.1 Build Variants
 
