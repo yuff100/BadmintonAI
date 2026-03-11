@@ -83,7 +83,7 @@ dependencies {
     // TFLite
     implementation("org.tensorflow:tensorflow-lite:2.15.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:2.15.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.15.0")
 
     // CameraX
     implementation("androidx.camera:camera-core:1.3.1")
