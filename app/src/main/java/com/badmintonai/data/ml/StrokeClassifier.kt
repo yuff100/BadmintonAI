@@ -3,16 +3,15 @@ package com.badmintonai.data.ml
 import android.content.Context
 import com.badmintonai.domain.model.PoseFrame
 import com.badmintonai.domain.model.StrokeType
+import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
 import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
 
 class StrokeClassifier(private val context: Context) {
     private var interpreter: Interpreter? = null
     private val modelPath = "stroke_classifier.tflite"
-    private val inputSize = 33 * 3 * 30 // 33 landmarks, 3 coordinates, 30 frames
+    private val inputSize = 33 * 3 * 30
 
     init {
         setupInterpreter()
@@ -20,19 +19,11 @@ class StrokeClassifier(private val context: Context) {
 
     private fun setupInterpreter() {
         try {
-            interpreter = Interpreter(loadModelFile())
+            val model: MappedByteBuffer = FileUtil.loadMappedFile(context, modelPath)
+            interpreter = Interpreter(model)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun loadModelFile(): MappedByteBuffer {
-        val fileDescriptor = context.assets.openFd(modelPath)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
     suspend fun classifyStroke(poseFrames: List<PoseFrame>): StrokeType {
@@ -40,9 +31,7 @@ class StrokeClassifier(private val context: Context) {
             return StrokeType.UNKNOWN
         }
 
-        // Take last 30 frames for classification
         val recentFrames = poseFrames.takeLast(30)
-        val inputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, inputSize), java.nio.ByteBuffer.allocateDirect(inputSize * 4).order(java.nio.ByteOrder.nativeOrder()))
         val inputArray = FloatArray(inputSize)
 
         var index = 0
@@ -54,6 +43,7 @@ class StrokeClassifier(private val context: Context) {
             }
         }
 
+        val inputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, inputSize), org.tensorflow.lite.DataType.FLOAT32)
         inputBuffer.loadArray(inputArray)
 
         val outputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, 6), org.tensorflow.lite.DataType.FLOAT32)

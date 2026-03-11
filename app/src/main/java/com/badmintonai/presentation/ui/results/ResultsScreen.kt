@@ -7,11 +7,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultsScreen(
     navController: NavController,
@@ -30,19 +37,19 @@ fun ResultsScreen(
     viewModel: ResultsViewModel = hiltViewModel()
 ) {
     var result by remember { mutableStateOf<com.badmintonai.domain.model.AnalysisResult?>(null) }
-    
+
     LaunchedEffect(resultId) {
         result = viewModel.getResult(resultId)
     }
-    
+
     Scaffold(
         topBar = {
-            androidx.compose.material3.TopAppBar(
+            TopAppBar(
                 title = { Text("Analysis Results") },
                 navigationIcon = {
-                    androidx.compose.material3.IconButton(onClick = { navController.popBackStack() }) {
-                        androidx.compose.material3.Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -83,7 +90,7 @@ fun ResultsScreen(
                         }
                     }
                 }
-                
+
                 items(analysisResult.dimensionScores) { dimensionScore ->
                     Card(
                         modifier = Modifier.fillMaxWidth()
@@ -92,7 +99,7 @@ fun ResultsScreen(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
+                            androidx.compose.foundation.layout.Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -118,7 +125,7 @@ fun ResultsScreen(
                         }
                     }
                 }
-                
+
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth()

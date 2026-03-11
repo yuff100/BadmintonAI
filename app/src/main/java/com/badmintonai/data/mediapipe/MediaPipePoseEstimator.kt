@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlin.math.min
 
 class MediaPipePoseEstimator(private val context: Context) {
     private var poseLandmarker: PoseLandmarker? = null

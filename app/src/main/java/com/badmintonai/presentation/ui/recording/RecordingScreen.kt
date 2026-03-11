@@ -2,7 +2,6 @@ package com.badmintonai.presentation.ui.recording
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -62,27 +61,27 @@ import kotlin.coroutines.suspendCoroutine
 fun RecordingScreen(navController: NavController) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    
+
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.RECORD_AUDIO
+                    ) == PackageManager.PERMISSION_GRANTED
         )
     }
-    
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         hasCameraPermission = permissions[Manifest.permission.CAMERA] == true &&
                 permissions[Manifest.permission.RECORD_AUDIO] == true
     }
-    
+
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             permissionLauncher.launch(
@@ -93,7 +92,7 @@ fun RecordingScreen(navController: NavController) {
             )
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -112,8 +111,7 @@ fun RecordingScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                spaceBy = 16.dp
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text("Camera and audio permissions required")
                 Button(onClick = {
@@ -148,14 +146,14 @@ fun CameraCaptureView(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
-    
+
     var videoCapture: VideoCapture<Recorder>? by remember { mutableStateOf(null) }
     var recording: Recording? by remember { mutableStateOf(null) }
     var isRecording by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
-    
+
     val previewView: PreviewView = remember { PreviewView(context) }
-    
+
     LaunchedEffect(Unit) {
         val cameraProvider = suspendCoroutine<ProcessCameraProvider> { continuation ->
             ProcessCameraProvider.getInstance(context).apply {
@@ -164,19 +162,19 @@ fun CameraCaptureView(
                 }, ContextCompat.getMainExecutor(context))
             }
         }
-        
+
         val preview = Preview.Builder().build().also {
             it.setSurfaceProvider(previewView.surfaceProvider)
         }
-        
+
         val recorder = Recorder.Builder()
             .setExecutor(cameraExecutor)
             .build()
-        
+
         videoCapture = VideoCapture.withOutput(recorder)
-        
+
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-        
+
         try {
             cameraProvider.unbindAll()
             cameraProvider.bindToLifecycle(
@@ -189,13 +187,13 @@ fun CameraCaptureView(
             exc.printStackTrace()
         }
     }
-    
+
     Box(modifier = modifier.fillMaxSize()) {
         AndroidView(
             factory = { previewView },
             modifier = Modifier.fillMaxSize()
         )
-        
+
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -220,7 +218,7 @@ fun CameraCaptureView(
                         } else {
                             val videoFile = createVideoFile(context)
                             val outputOptions = FileOutputOptions.Builder(videoFile).build()
-                            
+
                             recording = videoCapture?.output?.prepareRecording(context, outputOptions)?.apply {
                                 start(ContextCompat.getMainExecutor(context)) { event ->
                                     when (event) {
@@ -247,7 +245,7 @@ fun CameraCaptureView(
                         tint = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
-                
+
                 Text(
                     text = if (isRecording) "Tap to stop recording" else "Tap to start recording",
                     style = MaterialTheme.typography.titleMedium,
@@ -258,7 +256,7 @@ fun CameraCaptureView(
     }
 }
 
-private fun createVideoFile(context: Context): File {
+private fun createVideoFile(context: android.content.Context): File {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
     val storageDir = context.getExternalFilesDir("Movies")
     return File.createTempFile(

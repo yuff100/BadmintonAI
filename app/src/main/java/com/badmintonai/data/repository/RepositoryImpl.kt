@@ -1,8 +1,14 @@
 package com.badmintonai.data.repository
 
+import android.content.Context
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import com.badmintonai.data.local.AnalysisDao
 import com.badmintonai.data.local.toDomain
 import com.badmintonai.data.local.toEntity
+import com.badmintonai.data.mediapipe.MediaPipePoseEstimator
+import com.badmintonai.data.ml.ScoringEngine
+import com.badmintonai.data.ml.StrokeClassifier
 import com.badmintonai.domain.model.AnalysisResult
 import com.badmintonai.domain.model.DimensionScore
 import com.badmintonai.domain.model.PoseFrame
@@ -39,24 +45,24 @@ class AnalysisRepositoryImpl @Inject constructor(
 }
 
 class PoseEstimationRepositoryImpl @Inject constructor(
-    private val context: android.content.Context
+    private val context: Context
 ) : PoseEstimationRepository {
     
     private val poseEstimator = MediaPipePoseEstimator(context)
     
     override suspend fun processVideo(videoPath: String): List<PoseFrame> {
         val poseFrames = mutableListOf<PoseFrame>()
-        val retriever = android.media.MediaMetadataRetriever()
+        val retriever = MediaMetadataRetriever()
         
         try {
             retriever.setDataSource(videoPath)
-            val duration = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
-            val frameInterval = 33L // 30 fps
+            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
+            val frameInterval = 33L
             
             for (timestamp in 0 until duration step frameInterval) {
                 val bitmap = retriever.getFrameAtTime(
                     timestamp * 1000,
-                    android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC
+                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC
                 ) ?: continue
                 
                 val result = poseEstimator.processVideoFrame(bitmap, timestamp)
@@ -79,7 +85,7 @@ class PoseEstimationRepositoryImpl @Inject constructor(
     }
     
     override suspend fun processFrame(frameBytes: ByteArray, timestamp: Long): PoseFrame? {
-        val bitmap = android.graphics.BitmapFactory.decodeByteArray(frameBytes, 0, frameBytes.size)
+        val bitmap = BitmapFactory.decodeByteArray(frameBytes, 0, frameBytes.size)
         val result = poseEstimator.processVideoFrame(bitmap, timestamp)
         bitmap.recycle()
         return result?.let { poseEstimator.convertToPoseFrame(it, timestamp) }
@@ -87,7 +93,7 @@ class PoseEstimationRepositoryImpl @Inject constructor(
 }
 
 class StrokeClassificationRepositoryImpl @Inject constructor(
-    private val context: android.content.Context
+    private val context: Context
 ) : StrokeClassificationRepository {
     
     private val classifier = StrokeClassifier(context)
@@ -98,7 +104,7 @@ class StrokeClassificationRepositoryImpl @Inject constructor(
 }
 
 class ScoringRepositoryImpl @Inject constructor(
-    private val context: android.content.Context
+    private val context: Context
 ) : ScoringRepository {
     
     private val scoringEngine = ScoringEngine(context)

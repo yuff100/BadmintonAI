@@ -1,6 +1,10 @@
 package com.badmintonai.domain.usecase
 
 import com.badmintonai.domain.model.AnalysisResult
+import com.badmintonai.domain.model.DimensionScore
+import com.badmintonai.domain.model.PoseFrame
+import com.badmintonai.domain.model.ScoringDimension
+import com.badmintonai.domain.model.StrokeType
 import com.badmintonai.domain.repository.AnalysisRepository
 import com.badmintonai.domain.repository.PoseEstimationRepository
 import com.badmintonai.domain.repository.ScoringRepository
@@ -14,24 +18,16 @@ class AnalyzeVideoUseCase @Inject constructor(
     private val analysisRepo: AnalysisRepository
 ) {
     suspend operator fun invoke(videoPath: String): AnalysisResult {
-        // 1. Extract pose frames from video
         val poseFrames = poseEstimationRepo.processVideo(videoPath)
-        
-        // 2. Classify stroke type
         val strokeType = classificationRepo.classifyStroke(poseFrames)
-        
-        // 3. Calculate dimension scores
         val dimensionScores = scoringRepo.calculateScore(strokeType, poseFrames)
         
-        // 4. Calculate overall score (weighted average)
         val overallScore = dimensionScores.sumOf { 
             (it.score * it.weight).toInt() 
         }
         
-        // 5. Generate summary feedback
         val summaryFeedback = generateSummaryFeedback(dimensionScores, overallScore)
         
-        // 6. Create and save result
         val result = AnalysisResult(
             timestamp = System.currentTimeMillis(),
             strokeType = strokeType,
@@ -48,7 +44,7 @@ class AnalyzeVideoUseCase @Inject constructor(
     }
     
     private fun generateSummaryFeedback(
-        dimensionScores: List<com.badmintonai.domain.model.DimensionScore>,
+        dimensionScores: List<DimensionScore>,
         overallScore: Int
     ): String {
         val lowestScore = dimensionScores.minByOrNull { it.score }

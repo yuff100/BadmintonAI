@@ -1,7 +1,7 @@
-package com.badmintonai.di
+package com.badmintonai
 
-import dagger.hilt.android.HiltAndroidApp
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class BadmintonAIApp : Application()

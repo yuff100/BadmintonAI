@@ -4,10 +4,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,21 +28,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.badmintonai.presentation.navigation.Screen
+import kotlinx.coroutines.flow.collect
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalysisScreen(
     navController: NavController,
     videoPath: String,
     viewModel: AnalysisViewModel = hiltViewModel()
 ) {
-    var analysisResult by remember { mutableStateOf<Long?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
     LaunchedEffect(videoPath) {
         viewModel.analyzeVideo(videoPath).collect { result ->
             result.onSuccess { resultId ->
-                analysisResult = resultId
                 navController.navigate(Screen.Results.createRoute(resultId)) {
                     popUpTo(Screen.Recording.route) { inclusive = true }
                 }
@@ -47,12 +55,12 @@ fun AnalysisScreen(
     
     Scaffold(
         topBar = {
-            androidx.compose.material3.TopAppBar(
+            TopAppBar(
                 title = { Text("Analyzing Motion") },
                 navigationIcon = {
-                    androidx.compose.material3.IconButton(onClick = { navController.popBackStack() }) {
-                        androidx.compose.material3.Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -65,11 +73,13 @@ fun AnalysisScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            spaceBy = 24.dp
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             if (isLoading) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    modifier = Modifier.size(64.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text(
                     text = "Analyzing your swing...",
                     style = MaterialTheme.typography.headlineSmall

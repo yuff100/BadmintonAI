@@ -130,18 +130,18 @@ object ReferencePoseData {
         rightWrist: PoseLandmark
     ): List<PoseLandmark> {
         val landmarks = MutableList(33) { PoseLandmark(0f, 0f, 0f, 0f) }
-        landmarks[11] = rightShoulder // Right shoulder
-        landmarks[12] = PoseLandmark(0.3f, rightShoulder.y, 0f, 1f) // Left shoulder
-        landmarks[13] = rightElbow // Right elbow
-        landmarks[14] = PoseLandmark(0.2f, rightElbow.y, 0f, 1f) // Left elbow
-        landmarks[15] = rightWrist // Right wrist
-        landmarks[16] = PoseLandmark(0.1f, rightWrist.y, 0f, 1f) // Left wrist
-        landmarks[23] = PoseLandmark(0.5f, 0.6f, 0f, 1f) // Right hip
-        landmarks[24] = PoseLandmark(0.3f, 0.6f, 0f, 1f) // Left hip
-        landmarks[25] = PoseLandmark(0.55f, 0.75f, 0f, 1f) // Right knee
-        landmarks[26] = PoseLandmark(0.25f, 0.75f, 0f, 1f) // Left knee
-        landmarks[27] = PoseLandmark(0.6f, 0.9f, 0f, 1f) // Right ankle
-        landmarks[28] = PoseLandmark(0.2f, 0.9f, 0f, 1f) // Left ankle
+        landmarks[11] = rightShoulder
+        landmarks[12] = PoseLandmark(0.3f, rightShoulder.y, 0f, 1f)
+        landmarks[13] = rightElbow
+        landmarks[14] = PoseLandmark(0.2f, rightElbow.y, 0f, 1f)
+        landmarks[15] = rightWrist
+        landmarks[16] = PoseLandmark(0.1f, rightWrist.y, 0f, 1f)
+        landmarks[23] = PoseLandmark(0.5f, 0.6f, 0f, 1f)
+        landmarks[24] = PoseLandmark(0.3f, 0.6f, 0f, 1f)
+        landmarks[25] = PoseLandmark(0.55f, 0.75f, 0f, 1f)
+        landmarks[26] = PoseLandmark(0.25f, 0.75f, 0f, 1f)
+        landmarks[27] = PoseLandmark(0.6f, 0.9f, 0f, 1f)
+        landmarks[28] = PoseLandmark(0.2f, 0.9f, 0f, 1f)
         return landmarks
     }
 }
