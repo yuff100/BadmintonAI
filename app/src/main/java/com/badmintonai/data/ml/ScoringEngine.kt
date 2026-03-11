@@ -3,6 +3,7 @@ package com.badmintonai.data.ml
 import android.content.Context
 import com.badmintonai.domain.model.DimensionScore
 import com.badmintonai.domain.model.PoseFrame
+import com.badmintonai.domain.model.ReferencePose
 import com.badmintonai.domain.model.ScoringDimension
 import com.badmintonai.domain.model.StrokeType
 import kotlin.math.PI
@@ -10,6 +11,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.math.max
 
 class ScoringEngine(private val context: Context) {
     
@@ -35,16 +37,15 @@ class ScoringEngine(private val context: Context) {
     }
     
     private fun extractKeyFrames(poseFrames: List<PoseFrame>): KeyFrames {
-        // Find contact frame (highest wrist velocity)
         var maxVelocity = 0f
         var contactIndex = 0
         
         for (i in 1 until poseFrames.size) {
-            val prevWrist = poseFrames[i-1].landmarks[15] // 15 = right wrist
+            val prevWrist = poseFrames[i-1].landmarks[15]
             val currWrist = poseFrames[i].landmarks[15]
             val dx = currWrist.x - prevWrist.x
             val dy = currWrist.y - prevWrist.y
-            val velocity = sqrt(dx.pow(2) + dy.pow(2)) / 
+            val velocity = sqrt(dx.pow(2) + dy.pow(2)) 
             
             if (velocity > maxVelocity) {
                 maxVelocity = velocity
@@ -89,8 +90,8 @@ class ScoringEngine(private val context: Context) {
     }
     
     private fun calculateContactPointScore(keyFrames: KeyFrames, reference: ReferencePose): DimensionScore {
-        val actualPosition = keyFrames.contact.landmarks[15] // Right wrist
-        val referencePosition = reference.keyFrames.find { it.landmarks[15] }
+        val actualPosition = keyFrames.contact.landmarks[15]
+        val referencePosition = reference.keyFrames.firstOrNull()?.landmarks?.get(15) ?: actualPosition
         
         val positionDiff = sqrt(
             (actualPosition.x - referencePosition.x).pow(2) +
@@ -123,9 +124,9 @@ class ScoringEngine(private val context: Context) {
     
     private fun calculateTimingScore(keyFrames: KeyFrames, reference: ReferencePose): DimensionScore {
         val actualDuration = keyFrames.followThrough.timestamp - keyFrames.preparation.timestamp
-        val referenceDuration = reference.keyFrames.last().timestamp - reference.keyFrames.first().timestamp
+        val referenceDuration = (reference.keyFrames.lastOrNull()?.timestamp ?: 1000L) - (reference.keyFrames.firstOrNull()?.timestamp ?: 0L)
         
-        val timingDiff = abs(actualDuration - referenceDuration) / referenceDuration
+        val timingDiff = abs(actualDuration - referenceDuration).toFloat() / referenceDuration.toFloat()
         val score = max(0, 100 - (timingDiff * 200).toInt())
         
         return DimensionScore(
@@ -139,7 +140,6 @@ class ScoringEngine(private val context: Context) {
     private fun calculateFootworkScore(keyFrames: KeyFrames, reference: ReferencePose): DimensionScore {
         val leftAnkle = keyFrames.contact.landmarks[27]
         val rightAnkle = keyFrames.contact.landmarks[28]
-        val hip = keyFrames.contact.landmarks[23]
         
         val stanceWidth = abs(leftAnkle.x - rightAnkle.x)
         val referenceStance = reference.idealAngles["stance_width"] ?: 0.3f
@@ -167,9 +167,9 @@ class ScoringEngine(private val context: Context) {
     }
     
     private fun calculateShoulderElbowWristAngle(frame: PoseFrame): Float {
-        val shoulder = frame.landmarks[11] // Right shoulder
-        val elbow = frame.landmarks[13] // Right elbow
-        val wrist = frame.landmarks[15] // Right wrist
+        val shoulder = frame.landmarks[11]
+        val elbow = frame.landmarks[13]
+        val wrist = frame.landmarks[15]
         
         val v1x = elbow.x - shoulder.x
         val v1y = elbow.y - shoulder.y
@@ -211,7 +211,6 @@ class ScoringEngine(private val context: Context) {
         return atan2(det, dot) * (180 / PI.toFloat())
     }
     
-    // Feedback generation
     private fun getPreparationFeedback(score: Int): String {
         return when {
             score >= 90 -> "Excellent starting position!"
@@ -225,7 +224,7 @@ class ScoringEngine(private val context: Context) {
     private fun getBackswingFeedback(score: Int): String {
         return when {
             score >= 90 -> "Perfect backswing technique!"
-            score >= 80 -> "Good backswing, slightly adjust arm is properly loaded."
+            score >= 80 -> "Good backswing, adjust arm is properly loaded."
             score >= 70 -> "Average backswing, ensure you rotate your shoulders fully."
             score >= 60 -> "Needs improvement, get more shoulder rotation."
             else -> "Poor backswing, work on rotating your body correctly for more power."
