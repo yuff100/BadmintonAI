@@ -126,7 +126,7 @@ class ScoringEngine(private val context: Context) {
         val referenceDuration = reference.keyFrames.last().timestamp - reference.keyFrames.first().timestamp
         
         val timingDiff = abs(actualDuration - referenceDuration) / referenceDuration
-        val score = max(0, 100 - (timingDiff * 200).toInt()
+        val score = max(0, 100 - (timingDiff * 200).toInt())
         
         return DimensionScore(
             dimension = ScoringDimension.TIMING,
@@ -178,7 +178,7 @@ class ScoringEngine(private val context: Context) {
         
         val dot = v1x * v2x + v1y * v2y
         val det = v1x * v2y - v1y * v2x
-        return atan2(det, dot) * (180 / PI.toFloat()
+        return atan2(det, dot) * (180 / PI.toFloat())
     }
     
     private fun calculateShoulderHipKneeAngle(frame: PoseFrame): Float {
@@ -193,7 +193,7 @@ class ScoringEngine(private val context: Context) {
         
         val dot = v1x * v2x + v1y * v2y
         val det = v1x * v2y - v1y * v2x
-        return atan2(det, dot) * (180 / PI.toFloat()
+        return atan2(det, dot) * (180 / PI.toFloat())
     }
     
     private fun calculateArmFollowThroughAngle(frame: PoseFrame): Float {
