@@ -78,7 +78,9 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
 
     // MediaPipe
-    implementation("com.google.mediapipe:tasks-vision:0.10.11")
+    implementation("com.google.mediapipe:tasks-vision:0.10.11") {
+        exclude(group = "com.google.inject", module = "guice")
+    }
 
     // TFLite
     implementation("org.tensorflow:tensorflow-lite:2.15.0")
