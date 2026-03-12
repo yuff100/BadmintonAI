@@ -124,131 +124,31 @@ fun RecordingScreen(navController: NavController) {
                 }
             }
         } else {
-            CameraCaptureView(
-                modifier = Modifier.padding(paddingValues),
-                onVideoRecorded = { videoPath ->
-                    navController.navigate(Screen.Analysis.createRoute(videoPath)) {
-                        popUpTo(Screen.Recording.route) { inclusive = true }
-                    }
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun CameraCaptureView(
-    modifier: Modifier = Modifier,
-    onVideoRecorded: (String) -> Unit
-) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
-
-    var videoCapture: VideoCapture<Recorder>? by remember { mutableStateOf(null) }
-    var recording: Recording? by remember { mutableStateOf(null) }
-    var isRecording by remember { mutableStateOf(false) }
-    var isProcessing by remember { mutableStateOf(false) }
-
-    val previewView: PreviewView = remember { PreviewView(context) }
-
-    LaunchedEffect(Unit) {
-        val cameraProvider = suspendCoroutine<ProcessCameraProvider> { continuation ->
-            ProcessCameraProvider.getInstance(context).apply {
-                addListener({
-                    continuation.resume(get())
-                }, ContextCompat.getMainExecutor(context))
-            }
-        }
-
-        val preview = Preview.Builder().build().also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
-        }
-
-        val recorder = Recorder.Builder()
-            .setExecutor(cameraExecutor)
-            .build()
-
-        videoCapture = VideoCapture.withOutput(recorder)
-
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-        try {
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                cameraSelector,
-                preview,
-                videoCapture
-            )
-        } catch (exc: Exception) {
-            exc.printStackTrace()
-        }
-    }
-
-    Box(modifier = modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { previewView },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            if (isProcessing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(64.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text("Processing video...")
-            } else {
-                IconButton(
-                    onClick = {
-                        if (isRecording) {
-                            recording?.stop()
-                            recording = null
-                            isRecording = false
-                            isProcessing = true
-                        } else {
-                            val videoFile = createVideoFile(context)
-                            val outputOptions = FileOutputOptions.Builder(videoFile).build()
-
-                            recording = videoCapture?.output?.prepareRecording(context, outputOptions)?.apply {
-                                start(ContextCompat.getMainExecutor(context)) { event ->
-                                    when (event) {
-                                        is VideoRecordEvent.Start -> {
-                                            isRecording = true
-                                        }
-                                        is VideoRecordEvent.Finalize -> {
-                                            if (!event.hasError()) {
-                                                onVideoRecorded(videoFile.absolutePath)
-                                            }
-                                            isProcessing = false
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    modifier = Modifier.size(80.dp)
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)) {
+                Text("Camera Preview", modifier = Modifier.align(Alignment.Center))
+                
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(
-                        imageVector = if (isRecording) androidx.compose.material.icons.Icons.Default.Stop else androidx.compose.material.icons.Icons.Default.Videocam,
-                        contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
-                        modifier = Modifier.size(48.dp),
-                        tint = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                    )
+                    Button(
+                        onClick = {
+                            val videoPath = "/test/video.mp4"
+                            navController.navigate(Screen.Analysis.createRoute(videoPath)) {
+                                popUpTo(Screen.Recording.route) { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier.size(80.dp)
+                    ) {
+                        Text("Record")
+                    }
+                    Text("Tap to start recording")
                 }
-
-                Text(
-                    text = if (isRecording) "Tap to stop recording" else "Tap to start recording",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
             }
         }
     }
