@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -147,8 +145,8 @@ fun CameraCaptureView(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
 
-        var videoCapture: VideoCapture<Recorder>? by remember { mutableStateOf(null) }
-        var recording: androidx.camera.video.Recording? by remember { mutableStateOf(null) }
+    var videoCapture: VideoCapture<Recorder>? by remember { mutableStateOf(null) }
+    var recording: Recording? by remember { mutableStateOf(null) }
     var isRecording by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
 
@@ -239,7 +237,7 @@ fun CameraCaptureView(
                     modifier = Modifier.size(80.dp)
                 ) {
                     Icon(
-                        imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Videocam,
+                        imageVector = if (isRecording) androidx.compose.material.icons.Icons.Default.Stop else androidx.compose.material.icons.Icons.Default.Videocam,
                         contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
                         modifier = Modifier.size(48.dp),
                         tint = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
