@@ -53,6 +53,10 @@ android {
     }
 }
 
+configurations.all {
+    exclude(group = "com.google.inject", module = "guice")
+}
+
 dependencies {
     // Core
     implementation("androidx.core:core-ktx:1.12.0")
@@ -78,9 +82,7 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
 
     // MediaPipe
-    implementation("com.google.mediapipe:tasks-vision:0.10.11") {
-        exclude(group = "com.google.inject", module = "guice")
-    }
+    implementation("com.google.mediapipe:tasks-vision:0.10.11")
 
     // TFLite
     implementation("org.tensorflow:tensorflow-lite:2.15.0")
