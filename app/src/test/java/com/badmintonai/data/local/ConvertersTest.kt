@@ -1,5 +1,8 @@
 package com.badmintonai.data.local
 
+import com.badmintonai.domain.model.DimensionScore
+import com.badmintonai.domain.model.ScoringDimension
+import com.badmintonai.domain.model.StrokeType
 import com.google.gson.Gson
 import org.junit.Assert.assertEquals
 import org.junit.Test

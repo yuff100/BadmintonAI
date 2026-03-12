@@ -83,7 +83,7 @@ class UseCasesTest {
 
         assertEquals(StrokeType.UNKNOWN, result.strokeType)
         assertEquals(0, result.overallScore)
-        assertEquals(emptyList(), result.dimensionScores)
+        assertEquals(emptyList<DimensionScore>(), result.dimensionScores)
     }
 
     @Test
