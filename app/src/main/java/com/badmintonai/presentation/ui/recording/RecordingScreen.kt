@@ -23,8 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Videocam
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -149,8 +147,8 @@ fun CameraCaptureView(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
 
-    var videoCapture: VideoCapture<Recorder>? by remember { mutableStateOf(null) }
-    var recording: Recording? by remember { mutableStateOf(null) }
+        var videoCapture: VideoCapture<Recorder>? by remember { mutableStateOf(null) }
+        var recording: androidx.camera.video.Recording? by remember { mutableStateOf(null) }
     var isRecording by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
 
