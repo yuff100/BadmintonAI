@@ -17,6 +17,7 @@ import com.badmintonai.domain.repository.AnalysisRepository
 import com.badmintonai.domain.repository.PoseEstimationRepository
 import com.badmintonai.domain.repository.ScoringRepository
 import com.badmintonai.domain.repository.StrokeClassificationRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class AnalysisRepositoryImpl @Inject constructor(
@@ -45,7 +46,7 @@ class AnalysisRepositoryImpl @Inject constructor(
 }
 
 class PoseEstimationRepositoryImpl @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : PoseEstimationRepository {
     
     private val poseEstimator = MediaPipePoseEstimator(context)
@@ -93,7 +94,7 @@ class PoseEstimationRepositoryImpl @Inject constructor(
 }
 
 class StrokeClassificationRepositoryImpl @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : StrokeClassificationRepository {
     
     private val classifier = StrokeClassifier(context)
@@ -104,7 +105,7 @@ class StrokeClassificationRepositoryImpl @Inject constructor(
 }
 
 class ScoringRepositoryImpl @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : ScoringRepository {
     
     private val scoringEngine = ScoringEngine(context)
