@@ -58,7 +58,7 @@ class MediaPipePoseEstimator(private val context: Context) {
                 x = landmark.x(),
                 y = landmark.y(),
                 z = landmark.z(),
-                visibility = landmark.visibility() ?: 0f
+                visibility = landmark.visibility().orElse(0f)
             )
         }
         

@@ -32,13 +32,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import com.badmintonai.domain.model.AnalysisResult
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     navController: NavController,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    var history by remember { mutableStateOf(emptyList()) }
+    var history by remember { mutableStateOf(emptyList<AnalysisResult>()) }
 
     LaunchedEffect(Unit) {
         history = viewModel.getHistory()
